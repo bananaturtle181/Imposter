@@ -1,7 +1,7 @@
 import random as rd
 from wonderwords import RandomWord
 
-def players():
+def player_settings():
     players = []
 
     while True:
@@ -28,11 +28,14 @@ def players():
     return players
 
 def settings(player_list ,mode):
-    
+    no_imposter = 1
+    imposter = None
+    mr_n = None
+
     #implementation of game modes. 1 = normal (default), 2 = mysterious, 3 = chaos
     if mode == 1:
         imposter = rd.choice(player_list)
-    
+
     elif mode == 2:
         imposter = rd.choice(player_list)
         mr_n = rd.choice(player_list)
@@ -41,13 +44,14 @@ def settings(player_list ,mode):
             mr_n = rd.choice(player_list)
 
     elif mode == 3:
-        for player in player_list:
+        # for player in player_list:
+        #     player["role"] = "imposter"
+        no_imposter = len(player_list)
 
     else:
         print("Please choose a number between 1-3")
 
-
-    return imposter, mr_n
+    return imposter, mr_n, no_imposter
 
 # def word():
 #     return
@@ -55,15 +59,30 @@ def settings(player_list ,mode):
 
 def main():
 
-    players()
+    player_list = player_settings()
 
-    mode = input("Which game mode would you like to play? 1- Normal mode, 2- Mysterious mode, 3- Chaos mode")
+    #Choose game mode
+    print("1 - Normal")
+    print("2 - Mysterious")
+    print("3 - Chaos")
+
+    mode = int(input("Choose game mode: "))
+
+    #Apply settings / assign roles
+    settings(player_list, mode)
+
+    #Print results for testing
+    print("\n=== PLAYER ROLES ===")
+
+    for player in player_list:
+        print(player)
+
+main()
 
 
-    return
-
-#Example player list structure: 
-    #player_list = [{"name":"Law",
-#                    "role":"Imposter"
-#}
-#] Up to assigning role if mode == 1, then loop through list of dicts to assign everyone imposter for mode == 3
+#example structure
+#player_list = [
+#     {"name": "Law", "role": "imposter"},
+#     {"name": "Sarah", "role": "normal"},
+#     {"name": "John", "role": "normal"}
+# ]
