@@ -1,5 +1,5 @@
 import random as rd
-from wonderwords import RandomWord
+from olipy import corpora as co
 
 def player_settings():
     players = []
@@ -15,7 +15,9 @@ def player_settings():
 
                 if confirm in ("y", "Y"):
                     for i in range(1,no_players + 1):
-                        player = {'name': input(f"What is player {i}'s name? ")
+                        player = {'name': input(f"What is player {i}'s name? "),
+                                  'role': 'normal',
+                                  "word": None
                         }
                         players.append(player)
                     break
@@ -57,10 +59,25 @@ def settings(player_list ,mode):
             player["role"] = "normal"
 
 
-    return imposter, mr_n, no_imposter
+    return
 
-# def word():
-#     return
+def word(player_list,category):
+   
+    real_word = rd.choice(getattr(co, category))
+    hint_word = None                    #NEED TO FIGURE OUT LOGIC TO GET HINT WORD
+
+    for player in player_list:
+
+        if player["role"] == "imposter":
+            player["word"] = hint_word
+    
+        elif player["role"] == "mr_n":
+            player["word"] = None
+
+        else:
+            player["word"] = real_word
+
+    return
 
 
 def main():
@@ -72,9 +89,13 @@ def main():
     print("2 - Mysterious")
 
     mode = int(input("Choose game mode: "))
+    category = input("What category of word would you like?")
 
-    #Apply settings / assign roles
+    #Apply settings/assign roles
     settings(player_list, mode)
+
+    #Word settings
+    word(player_list, category)
 
     #Print results for testing
     print("\n=== PLAYER ROLES ===")
@@ -83,11 +104,3 @@ def main():
         print(player)
 
 main()
-
-
-#example structure
-#player_list = [
-#     {"name": "Law", "role": "imposter"},
-#     {"name": "Sarah", "role": "normal"},
-#     {"name": "John", "role": "normal"}
-# ]
