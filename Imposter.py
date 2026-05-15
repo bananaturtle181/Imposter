@@ -28,28 +28,34 @@ def player_settings():
     return players
 
 def settings(player_list ,mode):
-    no_imposter = 1
+    no_imposter = 0
     imposter = None
     mr_n = None
 
-    #implementation of game modes. 1 = normal (default), 2 = mysterious, 3 = chaos
-    if mode == 1:
-        imposter = rd.choice(player_list)
+    #Pre assigning special roles
+    imposter = rd.choice(player_list)
+    mr_n = rd.choice(player_list)
 
-    elif mode == 2:
-        imposter = rd.choice(player_list)
-        mr_n = rd.choice(player_list)
-
-        while imposter == mr_n:
+    while imposter == mr_n:
             mr_n = rd.choice(player_list)
-
-    elif mode == 3:
-        # for player in player_list:
-        #     player["role"] = "imposter"
+    
+    if mode == 3:
         no_imposter = len(player_list)
+    
+    for player in player_list:
 
-    else:
-        print("Please choose a number between 1-3")
+        if mode in (1,2) and player == imposter:
+            player["role"] = "imposter"
+        
+        elif mode == 2 and player == mr_n:
+            player["role"] = "mr n"
+        
+        elif mode == 3:
+            player["role"] = "imposter"
+        
+        else:
+            player["role"] = "normal"
+
 
     return imposter, mr_n, no_imposter
 
@@ -64,7 +70,6 @@ def main():
     #Choose game mode
     print("1 - Normal")
     print("2 - Mysterious")
-    print("3 - Chaos")
 
     mode = int(input("Choose game mode: "))
 
