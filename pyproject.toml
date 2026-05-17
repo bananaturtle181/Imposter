@@ -1,0 +1,19 @@
+[tool.ruff]
+# Target Python version
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+# Choose which rule sets to enforce
+select = [
+    "E",   # pycodestyle errors (PEP 8 spacing, layout)
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes (unused variables, undefined names)
+    "I",   # isort (automatically sorts your imports into the correct PEP 8 order!)
+    "N",   # pep8-naming (ensures snake_case for variables/functions)
+    "UP",  # pyupgrade (upgrades code to modern Python syntax styles)
+    "SIM", # flake8-simplify (suggests simpler ways to write your if/else logic)
+]
+
+# Tell Ruff what it is allowed to fix automatically on '--fix'
+fixable = ["ALL"]
