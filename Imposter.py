@@ -1,7 +1,8 @@
-from models import Player
+import random
 
-import random as rd
-from olipy import corpora as co
+from constants import Roles
+from hint_requests import get_hint
+from models import Player
 
 
 def player_settings():
@@ -39,41 +40,41 @@ def settings(player_list, mode):
     mr_n = None
 
     # Pre assigning special roles
-    imposter = rd.choice(player_list)
-    mr_n = rd.choice(player_list)
+    imposter = random.choice(player_list)
+    mr_n = random.choice(player_list)
 
     while imposter == mr_n:
-        mr_n = rd.choice(player_list)
+        mr_n = random.choice(player_list)
 
     if mode == 3:
         no_imposter = len(player_list)
 
     for player in player_list:
         if mode in (1, 2) and player == imposter:
-            player.role = "imposter"
+            player.role = Roles.IMPOSTER
 
         elif mode == 2 and player == mr_n:
-            player.role = "mr n"
+            player.role = Roles.MR_N
 
         elif mode == 3:
-            player.role = "imposter"
+            player.role = Roles.IMPOSTER
 
         else:
-            player.role = "normal"
+            player.role = Roles.NORMAL
 
     return
 
 
 def word(player_list, category):
 
-    real_word = rd.choice(getattr(co, category))
-    hint_word = None  # NEED TO FIGURE OUT LOGIC TO GET HINT WORD
+    real_word = category
+    hint_word = get_hint(real_word)
 
     for player in player_list:
-        if player.role == "imposter":
+        if player.role == Roles.IMPOSTER:
             player.word = hint_word
 
-        elif player.role == "mr_n":
+        elif player.role == Roles.MR_N:
             player.word = None
 
         else:
@@ -91,7 +92,8 @@ def main():
     print("2 - Mysterious")
 
     mode = int(input("Choose game mode: "))
-    category = input("What category of word would you like?")
+    # category = input("What category of word would you like?")
+    category = input("Choose a word: ")
 
     # Apply settings/assign roles
     settings(player_list, mode)
