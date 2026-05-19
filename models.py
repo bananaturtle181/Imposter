@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from constants import Roles
 
 """
 I have named this file models for clarity
@@ -25,7 +26,7 @@ class Player:
 
     # default role is normal, can be changed to imposter or mr_n
     # We assign imposter, see my comment in settings() function in Imposter.py
-    role: str = "normal"
+    role: Roles = Roles.NORMAL
 
     # Word assigned to player
     word: str = None  # None is default value

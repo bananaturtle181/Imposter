@@ -1,11 +1,11 @@
 from models import Player
-
-import random as rd
+import random
 from olipy import corpora as co
+from constants import Roles
+from hint_requests import get_hint
 
-
-def player_settings():
-    players = []
+def player_settings() -> list[Player]:
+    players: list[Player] = []
 
     while True:
         try:
@@ -33,47 +33,40 @@ def player_settings():
     return players
 
 
-def settings(player_list, mode):
-    no_imposter = 0
-    imposter = None
-    mr_n = None
+def settings(player_list: list[Player], mode: int) -> None:
 
-    # Pre assigning special roles
-    imposter = rd.choice(player_list)
-    mr_n = rd.choice(player_list)
+    if mode == 4: 
+        return
+    
+    if mode == 3:
+        for player in player_list:
+            player.role = Roles.IMPOSTER
+        return
+    
+    imposter = random.choice(player_list)
+    mr_n = random.choice(player_list)
 
     while imposter == mr_n:
-        mr_n = rd.choice(player_list)
-
-    if mode == 3:
-        no_imposter = len(player_list)
-
-    for player in player_list:
-        if mode in (1, 2) and player == imposter:
-            player.role = "imposter"
-
-        elif mode == 2 and player == mr_n:
-            player.role = "mr n"
-
-        elif mode == 3:
-            player.role = "imposter"
-
-        else:
-            player.role = "normal"
+        mr_n = random.choice(player_list)
+    
+    imposter.role = Roles.IMPOSTER
+    
+    if mode == 2:
+        mr_n.role = Roles.MR_N
 
     return
 
 
-def word(player_list, category):
+def word(player_list: list[Player], category: str) -> None:
 
-    real_word = rd.choice(getattr(co, category))
-    hint_word = None  # NEED TO FIGURE OUT LOGIC TO GET HINT WORD
+    real_word = category
+    hint_word = get_hint(real_word)
 
     for player in player_list:
-        if player.role == "imposter":
+        if player.role == Roles.IMPOSTER:
             player.word = hint_word
 
-        elif player.role == "mr_n":
+        elif player.role == Roles.MR_N:
             player.word = None
 
         else:
@@ -81,11 +74,11 @@ def word(player_list, category):
 
     return
 
-def order(player_list):
+# def order(player_list):
 
     
 
-    return
+#     return
 
 def main():
 
@@ -109,6 +102,5 @@ def main():
 
     for player in player_list:
         print(player)
-
 
 main()
