@@ -36,7 +36,7 @@ def player_settings() -> list[Player]:
 def settings(player_list: list[Player], mode: int) -> None:
 
     if mode == 4: 
-        return
+        return  #All players remain "normal" with mode 4
     
     if mode == 3:
         for player in player_list:
@@ -44,14 +44,15 @@ def settings(player_list: list[Player], mode: int) -> None:
         return
     
     imposter = random.choice(player_list)
-    mr_n = random.choice(player_list)
-
-    while imposter == mr_n:
-        mr_n = random.choice(player_list)
-    
     imposter.role = Roles.IMPOSTER
+   
+
+    if mode ==2:
+        mr_n = random.choice(player_list)
+
+        while imposter == mr_n:
+            mr_n = random.choice(player_list)
     
-    if mode == 2:
         mr_n.role = Roles.MR_N
 
     return
