@@ -74,11 +74,15 @@ def word(player_list: list[Player], category: str) -> None:
 
     return
 
-# def order(player_list):
+def order(player_list: list[Player]) -> None:
 
-    
+        for player in player_list:
+            print(f"{player.name}'s turn to see their word")
+            ready = input("Ready to see your word? (y/n)")
+            if ready.lower() == 'y':
+                print(f"Your word is {player.word}")
 
-#     return
+        return
 
 def main():
 
