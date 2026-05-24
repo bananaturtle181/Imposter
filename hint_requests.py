@@ -9,7 +9,7 @@ def get_hint(word):
     Check the documentation. This function takes the word
     and returns a hint related to that word.
     """
-    url = f"https://api.datamuse.com/words?ml={word}"
+    url = f"https://api.datamuse.com/words?rel_trg={word}"
 
     response = requests.get(url)
     if response.status_code == 200:
