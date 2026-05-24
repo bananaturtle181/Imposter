@@ -30,3 +30,6 @@ class Player:
 
     # Word assigned to player
     word: str = None  # None is default value
+
+    #cross check for if player has seen their word 
+    view: bool = False #False for no is the default value
