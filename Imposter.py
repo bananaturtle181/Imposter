@@ -36,19 +36,27 @@ def player_settings() -> list[Player]:
 def game_setting(player_list: list[Player]) -> tuple[int,str]:
 
     while True:
-        mode = int(input("Choose game mode: "))
-        if player_list.len() <= 3 and mode == 2:
+        try:
+            mode = int(input("Choose game mode: "))
+        except ValueError:
+            print("Please provide an integer")
+
+        if len(player_list) <= 3 and mode == 2:
             print("Not enough players to run game mode")
             continue
 
-        elif player_list.len() > 3 and mode == 2:
+        elif mode in (1,2,3,4):
             break
 
-    if mode in [1,2]:
+    if mode in (1,2):
         while True:
-            max_imposters = 5 
+            #Set rule for maximum allowed imposters = players/4, round down 
+            max_imposters = max(1,len(player_list)//4)
             imposters = GameSettings.imposters(input("Choose a number of imposters"))
-            if (player_list.len() - imposters) < 4:
+            if imposters > max_imposters:
+                print(f"Too many imposters for number of players. Max imposters is {max_imposters}")
+                continue
+            
     category = input("What category of word would you like?")
     
     return mode, category
