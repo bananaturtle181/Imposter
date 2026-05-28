@@ -31,13 +31,14 @@ class Player:
     # Word assigned to player
     word: str = None  # None is default value
 
-    #cross check for if player has seen their word 
-    view: bool = False #False for no is the default value
+    # cross check for if player has seen their word
+    view: bool = False  # False for no is the default value
+
 
 @dataclass
 class GameSettings:
     # What are the possibel game modes with the number of players
     mode: int
-    
+
     # The max number of imposters in the game
     imposters: int
