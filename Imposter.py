@@ -56,7 +56,7 @@ def game_setting(player_list: list[Player]) -> tuple[int,str]:
             if imposters > max_imposters:
                 print(f"Too many imposters for number of players. Max imposters is {max_imposters}")
                 continue
-            
+
     category = input("What category of word would you like?")
     
     return mode, category
@@ -80,10 +80,10 @@ def settings(player_list: list[Player], mode: int) -> None:
     
     imposter.role = Roles.IMPOSTER
     
-    if mode == 2 and player_list.len() > 3:
+    if mode == 2 and len(player_list) > 3:
         mr_n.role = Roles.MR_N
     
-    elif mode == 2 and player_list.len() <= 3:
+    elif mode == 2 and len(player_list) <= 3:
         print("Not enough players for chaos")
 
 
@@ -157,6 +157,3 @@ def main(mode: int,category: str) -> None:
 
 main()
 
-# 1. Need a statement to restrict game mode 2 if the number of imposters < 3
-# 2. Need a if statement if game mode 2 is chosen to select the number of imposters
-# 3. Need 
