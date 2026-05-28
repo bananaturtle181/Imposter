@@ -76,10 +76,10 @@ def assign_roles(player_list: list[Player], mode: int) -> None:
             player.role = Roles.IMPOSTER
         return
     
-    imposter = random.choice(player_list)
+    imposter = random.choice(player_list)   #NEED TO FACTOR IN NUMBER OF IMPOSTERS TO ASSIGN MORE THAN 1
     mr_n = random.choice(player_list)
 
-    while imposter == mr_n:
+    while imposter == mr_n: #Apparently this can be done without a loop?
         mr_n = random.choice(player_list)
     
     imposter.role = Roles.IMPOSTER
