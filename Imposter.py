@@ -40,13 +40,15 @@ def game_setting(player_list: list[Player]) -> tuple[int,str]:
             mode = int(input("Choose game mode: "))
         except ValueError:
             print("Please provide an integer")
-
+            continue
         if len(player_list) <= 3 and mode == 2:
             print("Not enough players to run game mode")
             continue
 
         elif mode in (1,2,3,4):
             break
+        else:
+            continue
 
     if mode in (1,2):
         while True:
@@ -56,13 +58,15 @@ def game_setting(player_list: list[Player]) -> tuple[int,str]:
             if imposters > max_imposters:
                 print(f"Too many imposters for number of players. Max imposters is {max_imposters}")
                 continue
+            else: 
+                break
 
     category = input("What category of word would you like?")
     
     return mode, category
 
 
-def settings(player_list: list[Player], mode: int) -> None:
+def assign_roles(player_list: list[Player], mode: int) -> None:
 
     if mode == 4: 
         return
@@ -80,17 +84,13 @@ def settings(player_list: list[Player], mode: int) -> None:
     
     imposter.role = Roles.IMPOSTER
     
-    if mode == 2 and len(player_list) > 3:
+    if mode == 2:
         mr_n.role = Roles.MR_N
-    
-    elif mode == 2 and len(player_list) <= 3:
-        print("Not enough players for chaos")
-
-
+  
     return
 
 
-def word(player_list: list[Player], category: str) -> None:
+def assign_word(player_list: list[Player], category: str) -> None:
 
     real_word = category
     hint_word = get_hint(real_word)
@@ -141,10 +141,10 @@ def main(mode: int,category: str) -> None:
     print("2 - Mysterious")
 
     # Apply settings/assign roles
-    settings(player_list, mode)
+    assign_roles(player_list, mode)
 
     # Word settings
-    word(player_list, category)
+    assign_word(player_list, category)
 
     # Print results for testing
     print("\n=== PLAYER ROLES ===")
