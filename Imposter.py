@@ -33,7 +33,7 @@ def player_settings() -> list[Player]:
 
     return players
 
-def game_setting(player_list: list[Player]) -> tuple[int,str]:
+def game_setting(player_list: list[Player]) -> tuple[GameSettings,str]:
 
     while True:
         try:
@@ -60,31 +60,38 @@ def game_setting(player_list: list[Player]) -> tuple[int,str]:
                 continue
             else: 
                 break
+    settings = GameSettings(
+                mode = mode,
+                imposters = imposters
+    )
 
     category = input("What category of word would you like?")
     
-    return mode, category
+    return settings, category
 
 
-def assign_roles(player_list: list[Player], mode: int) -> None:
+def assign_roles(player_list: list[Player], settings) -> None:      #Need to refactor as imposters has changed to a list
 
-    if mode == 4: 
+    if settings.mode == 4: 
         return
     
-    if mode == 3:
+    if settings.mode == 3:
         for player in player_list:
             player.role = Roles.IMPOSTER
         return
     
-    imposter = random.choice(player_list)   #NEED TO FACTOR IN NUMBER OF IMPOSTERS TO ASSIGN MORE THAN 1
+    imposter = random.sample(player_list, settings.imposters)
     mr_n = random.choice(player_list)
 
-    while imposter == mr_n: #Apparently this can be done without a loop?
-        mr_n = random.choice(player_list)
+    eligible_players = [
+        player for player in player_list if player not in imposter
+    ]
     
+    mr_n = random.choice(eligible_players)
+
     imposter.role = Roles.IMPOSTER
     
-    if mode == 2:
+    if settings.mode == 2:
         mr_n.role = Roles.MR_N
   
     return
@@ -134,14 +141,14 @@ def order(player_list: list[Player]) -> None:
 def main(mode: int,category: str) -> None:
 
     player_list = player_settings()
-    mode , category = game_setting(player_list)
+    settings, category = game_setting(player_list)
 
     # Choose game mode
     print("1 - Normal")
     print("2 - Mysterious")
 
     # Apply settings/assign roles
-    assign_roles(player_list, mode)
+    assign_roles(player_list, settings)
 
     # Word settings
     assign_word(player_list, category)
