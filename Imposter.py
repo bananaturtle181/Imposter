@@ -44,8 +44,7 @@ def player_settings() -> list[Player]:
     return players
 
 
-def game_setting(player_list: list[Player]) -> tuple[int, str]:
-
+def game_setting(player_list: list[Player]) -> tuple[GameSettings, str]:
     while True:
         try:
             mode = int(input("1 - Normal\n2 - Mysterious\nChoose game mode: "))
@@ -61,6 +60,7 @@ def game_setting(player_list: list[Player]) -> tuple[int, str]:
         else:
             continue
 
+    imposters = 0
     if mode in (1, 2):
         while True:
             # Set rule for maximum allowed imposters = players/4, round down
@@ -79,32 +79,38 @@ def game_setting(player_list: list[Player]) -> tuple[int, str]:
             else:
                 break
 
+    settings = GameSettings(
+        mode=mode,
+        imposters=imposters,
+    )
+
     category = input("What category of word would you like?")
 
-    return mode, category
+    return settings, category
 
 
-def assign_roles(player_list: list[Player], mode: int) -> None:
+def assign_roles(player_list: list[Player], settings) -> None:      #Need to refactor as imposters has changed to a list
 
-    if mode == 4:
+    if settings.mode == 4:
         return
 
-    if mode == 3:
+    if settings.mode == 3:
         for player in player_list:
             player.role = Roles.IMPOSTER
         return
 
-    imposter = random.choice(
-        player_list
-    )  # NEED TO FACTOR IN NUMBER OF IMPOSTERS TO ASSIGN MORE THAN 1
-    mr_n = random.choice(player_list)
+    # select imposters (may be more than one)
+    imposter = random.sample(player_list, settings.imposters)
 
-    while imposter == mr_n:  # Apparently this can be done without a loop?
-        mr_n = random.choice(player_list)
+    # pick mr_n from players not imposters
+    eligible_players = [player for player in player_list if player not in imposter]
+    mr_n = random.choice(eligible_players) if eligible_players else None
 
-    imposter.role = Roles.IMPOSTER
+    # assign imposter roles
+    for p in imposter:
+        p.role = Roles.IMPOSTER
 
-    if mode == 2:
+    if settings.mode == 2 and mr_n:
         mr_n.role = Roles.MR_N
 
     return
@@ -154,9 +160,9 @@ def order(player_list: list[Player]) -> None:
                 continue
 
 
-def run_game(player_list, mode, category):
+def run_game(player_list, settings, category):
     # using existing helpers
-    assign_roles(player_list, mode)
+    assign_roles(player_list, settings)
     assign_word(player_list, category)
     order(player_list)
     for p in player_list:
@@ -165,8 +171,8 @@ def run_game(player_list, mode, category):
 
 def main():
     players = player_settings()
-    mode, category = game_setting(players)
-    run_game(players, mode, category)
+    settings, category = game_setting(players)
+    run_game(players, settings, category)
 
 
 if __name__ == "__main__":
