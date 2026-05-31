@@ -18,53 +18,52 @@ def player_settings() -> list[Player]:
             else:
                 confirm = input(
                     f"There are going to be {no_players} playing. Is that correct?(y/n) "
-                )
+                ).lower().strip()
 
-                if confirm in ("y", "Y"):
-                    for i in range(1, no_players + 1):
+                if confirm != "y":
+                    continue
+                for i in range(1,no_players + 1):
+                    while True: 
                         name = input(f"What is player {i}'s name? ").strip()
 
-                        # extra check to make sure not the same name
-                        while not name or any(
-                            p.name.lower() == name.lower() for p in players
-                        ):
-                            name = input(
-                                "Name already taken or invalid. Choose a different name: "
-                            ).strip()
-
-                        players.append(Player(name=name))
-                    break
-
-                else:
-                    continue
-
+                        if not name: 
+                            print("Name cannot be empty.")
+                        if any(p.name.lower() == name.lower() for p in players):
+                            print("Name already taken. Choose a different name.")
+                            continue
+                        players.append(Player(name = name))
+                        break
+                    return players
         except ValueError:
-            print("Please provide a valid whole number")
-
-    return players
-
+        
 
 def game_setting(player_list: list[Player]) -> tuple[GameSettings, str]:
+    #Choose game mode
     while True:
         try:
             mode = int(input("1 - Normal\n2 - Mysterious\nChoose game mode: "))
         except ValueError:
             print("Please provide an integer")
             continue
-        if len(player_list) <= 3 and mode == 2:
-            print("Not enough players to run game mode!")
+        if mode not in (1, 2, 3, 4):
+            print("Invalid mode. Choose 1-4.")
             continue
 
-        elif mode in (1, 2, 3, 4):
-            break
-        else:
+        if mode == 2 and len(player_list) <= 3:
+            print("Not enough players to run Mysterious mode!")
             continue
+        break
 
+#-----------------------------------------------------------------------------
+  #Choose imposters
     imposters = 0
+    if mode == 4: 
+        imposters = 0
     if mode in (1, 2):
+        #Set rule for maximum allowed imposters as imposters = max no.players divided by 4, round down
+        max_imposters = max(1, len(player_list) // 4)
+
         while True:
-            # Set rule for maximum allowed imposters = players/4, round down
-            max_imposters = max(1, len(player_list) // 4)
             try:
                 imposters = int(input("How many Imposters? "))
             except ValueError:
@@ -76,27 +75,29 @@ def game_setting(player_list: list[Player]) -> tuple[GameSettings, str]:
                     f"Too many imposters for number of players. Max imposters is {max_imposters}"
                 )
                 continue
-            else:
-                break
+            if imposters <1: 
+                print("Must have at least 1 imposter")
+                continue
+            break
+    elif mode == 3:
+        imposters = len(player_list)
+    
+#---------------------------------------------------------------------------------
+# Category selection   
+    category = input("What category of word would you like?").strip()
+
+#---------------------------------------------------------------------------------
+#Build settings
     settings = GameSettings(
                 mode = mode,
                 imposters = imposters
     )
 
-    settings = GameSettings(
-        mode=mode,
-        imposters=imposters,
-    )
-
-    category = input("What category of word would you like?")
-
     return settings, category
 
 
 def assign_roles(player_list: list[Player], settings) -> None:      #Need to refactor as imposters has changed to a list
-    if settings.mode == 4: 
-        return
-
+   
     if settings.mode == 4:
         return
 
@@ -118,7 +119,7 @@ def assign_roles(player_list: list[Player], settings) -> None:      #Need to ref
     
     if settings.mode == 2:
     # select imposters (may be more than one)
-    imposter = random.sample(player_list, settings.imposters)
+        imposter = random.sample(player_list, settings.imposters)
 
     # pick mr_n from players not imposters
     eligible_players = [player for player in player_list if player not in imposter]
