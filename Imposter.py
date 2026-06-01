@@ -28,38 +28,39 @@ def player_settings() -> list[Player]:
 
                         if not name: 
                             print("Name cannot be empty.")
+                            continue
                         if any(p.name.lower() == name.lower() for p in players):
                             print("Name already taken. Choose a different name.")
                             continue
                         players.append(Player(name = name))
                         break
-                    return players
+                return players
         except ValueError:
-        
+            print("Please enter a valid number of players.")
 
 def game_setting(player_list: list[Player]) -> tuple[GameSettings, str]:
     #Choose game mode
     while True:
         try:
-            mode = int(input("1 - Normal\n2 - Mysterious\nChoose game mode: "))
+            mode = GameModes(int(input("1 - Normal\n2 - Mysterious\nChoose game mode: ")))
         except ValueError:
-            print("Please provide an integer")
-            continue
-        if mode not in (1, 2, 3, 4):
-            print("Invalid mode. Choose 1-4.")
+            print("Please provide a valid mode (1-4)")
             continue
 
-        if mode == 2 and len(player_list) <= 3:
+        if mode == GameModes.MYSTERIOUS and len(player_list) <= 3:
             print("Not enough players to run Mysterious mode!")
             continue
         break
 
 #-----------------------------------------------------------------------------
-  #Choose imposters
-    imposters = 0
-    if mode == 4: 
+#Choose imposters
+    if mode == GameModes.TROLL: 
         imposters = 0
-    if mode in (1, 2):
+
+    elif mode == GameModes.CHAOS:
+        imposters = len(player_list)
+
+    elif mode in (GameModes.NORMAL, GameModes.MYSTERIOUS):
         #Set rule for maximum allowed imposters as imposters = max no.players divided by 4, round down
         max_imposters = max(1, len(player_list) // 4)
 
@@ -79,8 +80,6 @@ def game_setting(player_list: list[Player]) -> tuple[GameSettings, str]:
                 print("Must have at least 1 imposter")
                 continue
             break
-    elif mode == 3:
-        imposters = len(player_list)
     
 #---------------------------------------------------------------------------------
 # Category selection   
@@ -96,50 +95,36 @@ def game_setting(player_list: list[Player]) -> tuple[GameSettings, str]:
     return settings, category
 
 
-def assign_roles(player_list: list[Player], settings) -> None:      #Need to refactor as imposters has changed to a list
-   
-    if settings.mode == 4:
+def assign_roles(player_list: list[Player], settings: GameSettings) -> None:    
+    # No special roles
+    if settings.mode == GameModes.TROLL:
         return
 
-    if settings.mode == 3:
+    # Everyone is imposter
+    if settings.mode == GameModes.CHAOS:
         for player in player_list:
             player.role = Roles.IMPOSTER
         return
-            
-    imposter = random.sample(player_list, settings.imposters)
-    mr_n = random.choice(player_list)
 
-    eligible_players = [
-        player for player in player_list if player not in imposter
-    ]
-    
-    mr_n = random.choice(eligible_players)
-
-    imposter.role = Roles.IMPOSTER
-    
-    if settings.mode == 2:
-    # select imposters (may be more than one)
-        imposter = random.sample(player_list, settings.imposters)
-
-    # pick mr_n from players not imposters
-    eligible_players = [player for player in player_list if player not in imposter]
-    mr_n = random.choice(eligible_players) if eligible_players else None
-
-    # assign imposter roles
-    for p in imposter:
+    # Normal and Mysterious modes
+    # select imposters
+    imposters = random.sample(player_list, settings.imposters)
+    for p in imposters:
         p.role = Roles.IMPOSTER
 
-    if settings.mode == 2 and mr_n:
-
-        mr_n.role = Roles.MR_N
-
-    return
+    # In mysterious mode, pick one MR_N from non-imposters
+    if settings.mode == GameModes.MYSTERIOUS:
+        eligible = [p for p in player_list if p not in imposters]
+        if eligible:
+            mr_n = random.choice(eligible)
+            mr_n.role = Roles.MR_N
 
 
 def assign_word(player_list: list[Player], category: str) -> None:
 
-    real_word = category
-    hint_word = get_hint(real_word)
+    hint_word = get_hint(category)
+    if hint_word is None:
+        print("Couldn't get a hint word, try a different category")
 
     for player in player_list:
         if player.role == Roles.IMPOSTER:
@@ -149,10 +134,8 @@ def assign_word(player_list: list[Player], category: str) -> None:
             player.word = None
 
         else:
-            player.word = real_word
-
-    return
-
+            player.word = category
+    
 
 def _clear_screen() -> None:
     # Clears the terminal screen for Windows (nt) and Mac/Linux (posix)
@@ -175,30 +158,21 @@ def order(player_list: list[Player]) -> None:
                 )
                 _clear_screen()
                 break
-
             elif ready == "n":
                 continue
+            else:
+                print("Please enter y or n")
 
-    player_list = player_settings()
-    settings, category = game_setting(player_list)
 
-    # Choose game mode
-    print("1 - Normal")
-    print("2 - Mysterious")
-
-    # Apply settings/assign roles
-    assign_roles(player_list, settings)
-
-    # Word settings
-
-def run_game(player_list, settings, category):
+def run_game(player_list: list[Player], settings: GameSettings, category: str) -> None :
     # using existing helpers
     assign_roles(player_list, settings)
-
     assign_word(player_list, category)
     order(player_list)
-    for p in player_list:
-        print(p)
+
+    #For debugging, print player details at the end of setup
+    # for p in player_list:
+    #     print(p)
 
 
 def main():
