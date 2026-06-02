@@ -163,6 +163,29 @@ def order(player_list: list[Player]) -> None:
             else:
                 print("Please enter y or n")
 
+def end_game(settings: GameSettings, player_list: list[Player]) -> None:
+    reveal_in_person = input("Do you want to reveal roles in person? (y/n)").lower()
+    
+    if reveal_in_person == "y":
+            return
+    
+    elif reveal_in_person == "n":
+        while True:
+            vote = input("Do you want to vote for who the imposter is? (y/n)").lower()
+            
+            if vote == "y":
+                suss_person = input("Who do you think is the imposter or MR_N?").lower()
+                for player in player_list:
+                    if player.name.lower() == suss_person:
+                        print(f"{player.name} was a {player.role.value}")   
+                break
+            elif vote == "n":
+                print("Take your time, come back when you are ready to vote")
+                continue
+            else:
+                print("Please enter y or n")
+    else:
+        print("Please enter y or n")
 
 def run_game(player_list: list[Player], settings: GameSettings, category: str) -> None :
     # using existing helpers
