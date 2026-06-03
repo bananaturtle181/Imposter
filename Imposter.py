@@ -1,9 +1,9 @@
 from models import Player, GameSettings
 import random
 from constants import Roles, GameModes
-from hint_requests import get_hint, get_word_from_category
+from hint_requests import get_word_from_category
 import os
-from words import WORD_CATEGORIES
+from words import PAIRED_CATEGORIES, API_CATEGORIES, get_available_categories
 
 
 def player_settings() -> list[Player]:
@@ -79,16 +79,13 @@ def game_setting(player_list: list[Player]) -> tuple[GameSettings, str, str]: #T
     #---------------------------------------------------------------------------------
     # Category selection   
     while True:
-        print("Available categories: " + ", ".join(WORD_CATEGORIES.keys()))
-        category = input("What category of word would you like? ").strip()
-        word = get_word_from_category(category)
-        if word is None:
+        print("Available categories: " + ", ".join(get_available_categories()))
+        category = input("What category of word would you like? ").strip().lower()
+        result = get_word_from_category(category)
+        if result is None:
             print("Couldn't find words for that category, try a different one")
             continue
-        hint_word = get_hint(word)
-        if hint_word is None:
-            print("Couldn't get a hint word, try a different category")
-            continue
+        real_word, hint_word = result
         break
 
     #---------------------------------------------------------------------------------
