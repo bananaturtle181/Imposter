@@ -1,8 +1,9 @@
 from models import Player, GameSettings
 import random
 from constants import Roles, GameModes
-from hint_requests import get_hint
+from hint_requests import get_hint, get_word_from_category
 import os
+from words import WORD_CATEGORIES
 
 
 def player_settings() -> list[Player]:
@@ -37,7 +38,7 @@ def player_settings() -> list[Player]:
         except ValueError:
             print("Please enter a valid number of players.")
 
-def game_setting(player_list: list[Player]) -> tuple[GameSettings, str, str]:
+def game_setting(player_list: list[Player]) -> tuple[GameSettings, str, str]: #Tuple of settings, real word, hint word
     #Choose game mode
     mode = random_game_mode(player_list)
 
@@ -56,39 +57,35 @@ def game_setting(player_list: list[Player]) -> tuple[GameSettings, str, str]:
 
     #-----------------------------------------------------------------------------
     #Choose imposters
-    if mode == GameModes.TROLL: 
-        imposters = 0
-
-    elif mode == GameModes.CHAOS:
-        imposters = len(player_list)
-
-    elif mode in (GameModes.NORMAL, GameModes.MYSTERIOUS):
-        #Set rule for maximum allowed imposters as imposters = max no.players divided by 4, round down
+    if mode in (GameModes.NORMAL, GameModes.MYSTERIOUS):
         max_imposters = max(1, len(player_list) // 4)
-
         while True:
             try:
                 imposters = int(input("How many Imposters? "))
             except ValueError:
                 print("Please provide a valid whole number for imposters")
                 continue
-
             if imposters > max_imposters:
-                print(
-                    f"Too many imposters for number of players. Max imposters is {max_imposters}"
-                )
+                print(f"Too many imposters for number of players. Max imposters is {max_imposters}")
                 continue
-            if imposters <1: 
+            if imposters < 1:
                 print("Must have at least 1 imposter")
                 continue
             break
-    else: 
-        imposters = 0 # Default to 0 imposters for any unrecognized mode, should not happen
+    else:
+        # Ask anyway to hide game mode from other players
+        input("How many Imposters? ")
+        imposters = 0 if mode == GameModes.TROLL else len(player_list)
     #---------------------------------------------------------------------------------
     # Category selection   
     while True:
+        print("Available categories: " + ", ".join(WORD_CATEGORIES.keys()))
         category = input("What category of word would you like? ").strip()
-        hint_word = get_hint(category)
+        word = get_word_from_category(category)
+        if word is None:
+            print("Couldn't find words for that category, try a different one")
+            continue
+        hint_word = get_hint(word)
         if hint_word is None:
             print("Couldn't get a hint word, try a different category")
             continue
@@ -101,7 +98,7 @@ def game_setting(player_list: list[Player]) -> tuple[GameSettings, str, str]:
                 imposters = imposters
     )
 
-    return settings, category, hint_word
+    return settings, word, hint_word
 
 
 def assign_roles(player_list: list[Player], settings: GameSettings) -> None:    
@@ -129,14 +126,14 @@ def assign_roles(player_list: list[Player], settings: GameSettings) -> None:
             mr_n.role = Roles.MR_N
 
 
-def assign_word(player_list: list[Player], category: str, hint_word: str) -> None:
+def assign_word(player_list: list[Player], real_word: str, hint_word: str) -> None:
     for player in player_list:
         if player.role == Roles.IMPOSTER:
             player.word = hint_word
         elif player.role == Roles.MR_N:
             player.word = None
         else:
-            player.word = category
+            player.word = real_word
 
 def random_game_mode(player_list: list[Player]) -> GameModes | None:
     while True:
@@ -167,7 +164,7 @@ def random_game_mode(player_list: list[Player]) -> GameModes | None:
             print("Invalid input, please enter valid mode numbers separated by commas")
 
     chosen = random.choice(selected)
-    print(f"Randomly selected: {chosen.name}")
+    # print(f"Randomly selected: {chosen.name}")
     return chosen
 
 def _clear_screen() -> None:
@@ -225,16 +222,16 @@ def end_game(settings: GameSettings, player_list: list[Player]) -> None:
     for player in player_list:
         print(f"{player.name} was {player.role.value}")
 
-def run_game(player_list: list[Player], settings: GameSettings, category: str, hint_word: str) -> None:
+def run_game(player_list: list[Player], settings: GameSettings, real_word: str, hint_word: str) -> None:
     assign_roles(player_list, settings)
-    assign_word(player_list, category, hint_word)
+    assign_word(player_list, real_word, hint_word)
     order(player_list)
     end_game(settings, player_list)
 
 def main():
     players = player_settings()
-    settings, category, hint_word = game_setting(players)
-    run_game(players, settings, category, hint_word)
+    settings, real_word, hint_word = game_setting(players)
+    run_game(players, settings, real_word, hint_word)
 
 
 if __name__ == "__main__":

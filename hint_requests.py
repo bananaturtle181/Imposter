@@ -1,7 +1,8 @@
 import random
 
 import requests
-
+from words import PAIRED_CATEGORIES, API_CATEGORIES
+from word_tracker import get_unused_words, mark_word_as_used
 
 def get_hint(word: str) -> str | None:
     """
@@ -18,3 +19,23 @@ def get_hint(word: str) -> str | None:
     except requests.RequestException:
         print("Network error, couldn't fetch hint word")
         return None
+    
+def get_word_from_category(category: str) -> tuple[str, str] | None:
+    if category in PAIRED_CATEGORIES:
+        all_words = list(PAIRED_CATEGORIES[category].keys())
+        unused = get_unused_words(category, all_words)
+        word = random.choice(unused)
+        hint = PAIRED_CATEGORIES[category][word]
+        mark_word_as_used(category, word)
+        return word, hint
+
+    elif category in API_CATEGORIES:
+        all_words = API_CATEGORIES[category]
+        unused = get_unused_words(category, all_words)
+        word = random.choice(unused)
+        hint = get_hint(word)
+        mark_word_as_used(category, word)
+        return (word, hint) if hint else None
+
+    return None
+        
