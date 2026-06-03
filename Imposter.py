@@ -1,6 +1,5 @@
 from models import Player, GameSettings
 import random
-from olipy import corpora as co
 from constants import Roles, GameModes
 from hint_requests import get_hint
 import os
@@ -38,22 +37,25 @@ def player_settings() -> list[Player]:
         except ValueError:
             print("Please enter a valid number of players.")
 
-def game_setting(player_list: list[Player]) -> tuple[GameSettings, str]:
+def game_setting(player_list: list[Player]) -> tuple[GameSettings, str, str]:
     #Choose game mode
-    while True:
-        try:
-            mode = GameModes(int(input("1 - Normal\n2 - Mysterious\nChoose game mode: ")))
-        except ValueError:
-            print("Please provide a valid mode (1-4)")
-            continue
+    mode = random_game_mode(player_list)
 
-        if mode == GameModes.MYSTERIOUS and len(player_list) <= 3:
-            print("Not enough players to run Mysterious mode!")
-            continue
-        break
+    if mode is None:
+        while True:
+            try:
+                mode = GameModes(int(input("1 - Normal\n2 - Mysterious\nChoose game mode: ")))
+            except ValueError:
+                print("Please provide a valid mode (1-4)")
+                continue
 
-#-----------------------------------------------------------------------------
-#Choose imposters
+            if mode == GameModes.MYSTERIOUS and len(player_list) <= 3:
+                print("Not enough players to run Mysterious mode!")
+                continue
+            break
+
+    #-----------------------------------------------------------------------------
+    #Choose imposters
     if mode == GameModes.TROLL: 
         imposters = 0
 
@@ -80,19 +82,26 @@ def game_setting(player_list: list[Player]) -> tuple[GameSettings, str]:
                 print("Must have at least 1 imposter")
                 continue
             break
-    
-#---------------------------------------------------------------------------------
-# Category selection   
-    category = input("What category of word would you like?").strip()
+    else: 
+        imposters = 0 # Default to 0 imposters for any unrecognized mode, should not happen
+    #---------------------------------------------------------------------------------
+    # Category selection   
+    while True:
+        category = input("What category of word would you like? ").strip()
+        hint_word = get_hint(category)
+        if hint_word is None:
+            print("Couldn't get a hint word, try a different category")
+            continue
+        break
 
-#---------------------------------------------------------------------------------
-#Build settings
+    #---------------------------------------------------------------------------------
+    #Build settings
     settings = GameSettings(
                 mode = mode,
                 imposters = imposters
     )
 
-    return settings, category
+    return settings, category, hint_word
 
 
 def assign_roles(player_list: list[Player], settings: GameSettings) -> None:    
@@ -120,22 +129,46 @@ def assign_roles(player_list: list[Player], settings: GameSettings) -> None:
             mr_n.role = Roles.MR_N
 
 
-def assign_word(player_list: list[Player], category: str) -> None:
-
-    hint_word = get_hint(category)
-    if hint_word is None:
-        print("Couldn't get a hint word, try a different category")
-
+def assign_word(player_list: list[Player], category: str, hint_word: str) -> None:
     for player in player_list:
         if player.role == Roles.IMPOSTER:
             player.word = hint_word
-
         elif player.role == Roles.MR_N:
             player.word = None
-
         else:
             player.word = category
-    
+
+def random_game_mode(player_list: list[Player]) -> GameModes | None:
+    while True:
+        choice = input("Do you want random or manual game mode? (r/m) ").lower().strip()
+        if choice == "m":
+            return None
+        elif choice == "r":
+            break
+        else:
+            print("Please enter r or m")
+
+    while True:
+        try:
+            raw = input("Which modes do you want in the pool? (e.g. 1,2,3,4): ").strip()
+            selected = [GameModes(int(x.strip())) for x in raw.split(",")]
+            
+            # Filter out Mysterious if not enough players
+            if GameModes.MYSTERIOUS in selected and len(player_list) <= 3:
+                print("Not enough players for Mysterious mode, removing it from the pool...")
+                selected = [m for m in selected if m != GameModes.MYSTERIOUS]
+
+            if len(selected) < 2:
+                print("Please select at least 2 modes for random to make sense!")
+                continue
+
+            break
+        except ValueError:
+            print("Invalid input, please enter valid mode numbers separated by commas")
+
+    chosen = random.choice(selected)
+    print(f"Randomly selected: {chosen.name}")
+    return chosen
 
 def _clear_screen() -> None:
     # Clears the terminal screen for Windows (nt) and Mac/Linux (posix)
@@ -164,44 +197,44 @@ def order(player_list: list[Player]) -> None:
                 print("Please enter y or n")
 
 def end_game(settings: GameSettings, player_list: list[Player]) -> None:
-    reveal_in_person = input("Do you want to reveal roles in person? (y/n)").lower()
-    
-    if reveal_in_person == "y":
-            return
-    
-    elif reveal_in_person == "n":
-        while True:
-            vote = input("Do you want to vote for who the imposter is? (y/n)").lower()
-            
-            if vote == "y":
-                suss_person = input("Who do you think is the imposter or MR_N?").lower()
-                for player in player_list:
-                    if player.name.lower() == suss_person:
-                        print(f"{player.name} was a {player.role.value}")   
-                break
-            elif vote == "n":
-                print("Take your time, come back when you are ready to vote")
-                continue
-            else:
-                print("Please enter y or n")
-    else:
-        print("Please enter y or n")
+    _clear_screen()
+    input("Press Enter to reveal...")
+    _clear_screen()
 
-def run_game(player_list: list[Player], settings: GameSettings, category: str) -> None :
-    # using existing helpers
+    if settings.mode == GameModes.CHAOS:
+        print("Everyone was an imposter!")
+        return
+    
+    if settings.mode == GameModes.TROLL:
+        print("No one was an imposter!")
+        return
+
+    # Reveal words first
+    for player in player_list:
+        if player.role == Roles.NORMAL:
+            print(f"The real word was: {player.word}")
+            break
+    
+    for player in player_list:
+        if player.role == Roles.IMPOSTER:
+            print(f"The imposters word was: {player.word}")
+            break
+
+    # Reveal roles
+    print("\nRoles:")
+    for player in player_list:
+        print(f"{player.name} was {player.role.value}")
+
+def run_game(player_list: list[Player], settings: GameSettings, category: str, hint_word: str) -> None:
     assign_roles(player_list, settings)
-    assign_word(player_list, category)
+    assign_word(player_list, category, hint_word)
     order(player_list)
-
-    #For debugging, print player details at the end of setup
-    # for p in player_list:
-    #     print(p)
-
+    end_game(settings, player_list)
 
 def main():
     players = player_settings()
-    settings, category = game_setting(players)
-    run_game(players, settings, category)
+    settings, category, hint_word = game_setting(players)
+    run_game(players, settings, category, hint_word)
 
 
 if __name__ == "__main__":
