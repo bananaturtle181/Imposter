@@ -95,7 +95,7 @@ def game_setting(player_list: list[Player]) -> tuple[GameSettings, str, str]: #T
                 imposters = imposters
     )
 
-    return settings, word, hint_word
+    return settings, real_word, hint_word
 
 
 def assign_roles(player_list: list[Player], settings: GameSettings) -> None:    
